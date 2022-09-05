@@ -4,15 +4,15 @@
 __all__ = ['OptimizerType', 'CalibrateSimulation']
 
 # %% ..\00_calibrate_simulation.ipynb 3
-from enum import Enum
-class OptimizerType(Enum):
-    GUROBI = 1
-    OR_TOOLS = 2
+#| export
+
 
 # %% ..\00_calibrate_simulation.ipynb 4
 import random
 import numpy as np
 import pandas as pd
+from enum import Enum
+
 
 import tensorflow as tf
 from tensorflow.keras import models 
@@ -25,7 +25,9 @@ from gurobipy import GRB
 from ortools.linear_solver import pywraplp
 
 
-
+class OptimizerType(Enum):
+    GUROBI = 1
+    OR_TOOLS = 2
 
 class CalibrateSimulation:
 
