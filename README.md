@@ -36,7 +36,7 @@ The available MIP solvers for the optimization step are:
     necessary licenses).
 2.  Google OR Tools based SCIP solver.
 
-## Sample Code
+## Minimal Sample Code
 
 ``` python
 import numpy as np
