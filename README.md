@@ -64,5 +64,3 @@ upper_bound = [2.5, 1, 10, 5, 0.8,760]
 # Use selected solver to create and solve the optimization model for given sample target values
 result = optimizer.solve_optimization(target_sample,lower_bound,upper_bound)
 ```
-
-    2
