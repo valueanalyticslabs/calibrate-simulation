@@ -36,6 +36,8 @@ The available MIP solvers for the optimization step are:
     necessary licenses).
 2.  Google OR Tools based SCIP solver.
 
+## Sample Code
+
 ``` python
 import numpy as np
 
@@ -63,4 +65,77 @@ upper_bound = [2.5, 1, 10, 5, 0.8,760]
 
 # Use selected solver to create and solve the optimization model for given sample target values
 result = optimizer.solve_optimization(target_sample,lower_bound,upper_bound)
+```
+
+## FULL Working Sample
+
+### 1. Prepare training datasets
+
+``` python
+import numpy as np
+import pandas as pd
+
+M = pd.read_csv('testing/data/output-seed_1337-30000.csv')
+#NORMALIZATION
+M.drop(M.columns[[8,12,13,16,17,18,21]], axis = 1, inplace= True)
+for i in range(6,15):
+    M.iloc[:,i] = (M.iloc[:,i] - M.iloc[:,i].min())/(M.iloc[:,i].max() - M.iloc[:,i].min())
+    target_sample = M.sample(100)
+M = M.drop(target_sample.index)
+M.reset_index(inplace=True)
+M.drop(M.columns[0], axis = 1, inplace=True)
+M.to_csv('testing/data/OutputMinMaxScaledResults30000.csv')
+target_sample.to_csv('testing/data/TargetSample.csv')
+
+M_train = M.sample(frac=0.7,  random_state=1337)
+M_rest = M.drop(M_train.index)
+M_validation = M_rest.sample(frac=0.5,  random_state=1337)
+M_test = M_rest.drop(M_validation.index)
+
+X_training = np.array(M_train.iloc[:,:6])
+X_validation = np.array(M_validation.iloc[:,:6])
+X_test = np.array(M_test.iloc[:,:6])
+
+Y_training = np.array(M_train.iloc[:,6:])
+Y_validation = np.array(M_validation.iloc[:,6:])
+Y_test = np.array(M_test.iloc[:,6:])
+```
+
+### 2. Prepare target value datasets
+
+``` python
+Target_Sample = pd.read_csv('testing/data/TargetSample.csv', index_col=0).iloc[:,[6,7,8,9,10,11,12,13,14]]
+Target_Sample.reset_index(inplace=True)
+Target_Sample.drop(Target_Sample.columns[0], axis = 1, inplace=True)
+target_val = np.array(Target_Sample[0:1]).tolist()[0]
+```
+
+### 3. Train NN model
+
+``` python
+optimizer = CalibrateSimulation(OptimizerType.OR_TOOLS)
+optimizer.train_model(X_training, Y_training, X_validation, Y_validation)
+```
+
+### 4. Generate calibration inputs using optimization
+
+``` python
+sample_arrays = np.array(Target_Sample)
+lower_bound = [1, 0.5, 5, 1, 0.4, 390]
+upper_bound = [2.5, 1, 10, 5, 0.8,760]
+
+results_param = {}
+results_output = {}
+for i in range(100):
+    result = optimizer.solve_optimization(sample_arrays[i],lower_bound,upper_bound)
+    results_param[i] = result[0]
+    results_output[i] = result[1]
+    print(f'{i} done')
+```
+
+### 5. Print results
+
+``` python
+print(results_param)
+print(results_output)
 ```
